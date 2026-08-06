@@ -1,0 +1,17 @@
+    <header class="bloom-nav">
+      <span class="bloom-mark">Soully</span>
+      <nav class="bloom-links">
+        <%if (member){ %>
+        <a href="/admin" class="bloom-link <%= active === 'dashboard' ? 'is-active' : '' %>">Home</a>
+        <a href="/admin/product/all" class="bloom-link <%= active === 'menu' ? 'is-active' : '' %>">Menu</a>
+        <a href="/admin/user/all" class="bloom-link <%= active === 'users' ? 'is-active' : '' %>">Users</a>
+        <a href="/admin/logout" class="bloom-logout-btn" id="logoutLink">Logout</a>
+
+       <% }else{%>
+          <a href="/admin" class="bloom-link <%= active === 'dashboard' ? 'is-active' : '' %>">Home</a>
+          <a href="/admin/login" class="bloom-link <%= active === 'login' ? 'is-active' : '' %>">Login</a>
+          <a href="/admin/signup" class="bloom-link <%= active === 'signup' ? 'is-active' : '' %>">Signup</a>
+       <% }%>
+       
+      </nav>
+    </header>

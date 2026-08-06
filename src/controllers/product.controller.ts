@@ -37,7 +37,7 @@ productController.getAllProducts = async(req:Request, res: Response)=>{
         const data = await productService.getAllProduct();
         console.log("data",data)
 
-        res.render("products", {products:data})
+        res.render("menu", {products:data})
     }catch(err){
         console.log("Error,getAllProducts", err);
         if(err instanceof Errors)res.status(err.code).json(err);
@@ -71,23 +71,32 @@ productController.createNewProduct = async(req:AdminRequest, res: Response)=>{
     try{ 
         console.log("createNewProduct")
         console.log("req.body", req.body);
+        console.log("BODY:", req.body);
+        console.log("FILES:", req.files);
+
+        const data: ProductInput = req.body;
+        data.productImages = req.files?.map((ele) => ele.path);
+
+        console.log("DATA:", data);
+
+        const result = await productService.createNewProduct(data);
+
+        console.log("RESULT:", result);
+        
         if(!req.files?.length)
             throw new Errors(HttpCode.INTERNAL_SERVER_ERROR, Message.CREATE_FAILED)
-           
-        const data: ProductInput = req.body;
         data.productImages = req.files?.map(ele=>{
           return ele.path;
         });
        
     await productService.createNewProduct(data);
-     res.send
-     (`<script>alert("Successfully creation!"); window.location.replace('/admin/product/all)</script>`)
+    res.redirect("/admin/product/all");
     }catch(err){
         console.log("Error,createNewProduct", err);
         const message = 
         err instanceof Errors ? err.message:Message.SOMETHING_WENT_WRONG
         res.send
-     (`<script>alert("${message}"); window.location.replace('/admin/product/all)</script>`)
+     (`<script>alert("${message}"); window.location.replace("/admin/product/all")</script>`)
 
     }
 };

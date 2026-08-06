@@ -13,20 +13,12 @@ const restaurantController: T ={};
 restaurantController.goHome = (req:Request, res: Response)=>{
     try{
         console.log("goHome")
-        res.render("Home")
+        res.render("dashboard")
     }catch(err){
         console.log("Error, goHome", err)
     }
 }
 
-// restaurantController.getSignup = (req:Request, res: Response)=>{
-//     try{
-//         console.log("getSignup")
-//         res.render("signup")
-//     }catch(err){
-//         console.log("Error, getSignup", err)
-//     }
-// };
 
 restaurantController.getSignup = (req: Request, res: Response) => {
     try {
@@ -101,7 +93,7 @@ restaurantController.logout = async(req:AdminRequest, res: Response)=>{
     try{
         console.log("logout")
       req.session.destroy(function(){
-        res.redirect("/admin")
+        res.redirect("/admin/login")
       })
     }catch(err){
         console.log("Error, logout", err)

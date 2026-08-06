@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head', { title: 'Dashboard', cssFile: 'dashboard.css' ,cssFile: 'index.css'   }) %>
+</head>
+<body>
+
+  <div class="bloom-page">
+    <div class="bloom-wash" aria-hidden="true"></div>
+
+    <%- include('partials/nav-admin', { active: 'dashboard' }) %>
+   
+    <main class="bloom-stage">
+      <svg
+        class="bloom-flower"
+        viewBox="-260 -260 520 520"
+        role="img"
+        aria-label="An illustrated flower in bloom, layered from outer to inner petals"
+      >
+        <defs>
+          <radialGradient id="petalOuter" cx="50%" cy="15%" r="90%">
+            <stop offset="0%" stop-color="#e9c3c6" />
+            <stop offset="55%" stop-color="#b76b78" />
+            <stop offset="100%" stop-color="#4c2029" />
+          </radialGradient>
+          <radialGradient id="petalMiddle" cx="50%" cy="15%" r="90%">
+            <stop offset="0%" stop-color="#f2d9c9" />
+            <stop offset="55%" stop-color="#cf9a63" />
+            <stop offset="100%" stop-color="#5c3a1e" />
+          </radialGradient>
+          <radialGradient id="petalInner" cx="50%" cy="20%" r="90%">
+            <stop offset="0%" stop-color="#fff3da" />
+            <stop offset="60%" stop-color="#e8b9bb" />
+            <stop offset="100%" stop-color="#7a3540" />
+          </radialGradient>
+          <radialGradient id="pistil" cx="40%" cy="35%" r="65%">
+            <stop offset="0%" stop-color="#fff6e5" />
+            <stop offset="100%" stop-color="#cfa96a" />
+          </radialGradient>
+          <filter id="bloomGlow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="14" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <circle class="bloom-glow-halo" cx="0" cy="0" r="200"></circle>
+
+        <g id="ring-outer" class="bloom-ring bloom-ring--outer" filter="url(#bloomGlow)"></g>
+        <g id="ring-middle" class="bloom-ring bloom-ring--middle"></g>
+        <g id="ring-inner" class="bloom-ring bloom-ring--inner"></g>
+
+        <circle cx="0" cy="0" r="16" fill="url(#pistil)"></circle>
+      </svg>
+
+      <p class="bloom-caption">Every arrangement starts before the first order.</p>
+    </main>
+  </div>
+
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

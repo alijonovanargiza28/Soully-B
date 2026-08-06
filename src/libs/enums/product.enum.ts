@@ -1,28 +1,21 @@
-export enum ProductSize{
-    SMALL="SMALL",
-    NORMAL="NORMAL",
-    LARGE="LARGE",
-    SET="SET",
+export enum ProductSize {
+  SMALL = "SMALL",
+  MEDIUM = "MEDIUM",
+  LARGE = "LARGE",
 }
 
-export enum ProductVolume{
-    HALF=0.5,
-    ONE=1,
-    ONE_POINT_TWO=1.2,
-    ONE_POINT_FIVE=1.5,
-    TWO=2,
+export enum ProductStatus {
+  PAUSE = "PAUSE",
+  PROCESS = "PROCESS",
+  DELETE = "DELETE",
 }
 
-export enum ProductStatus{
-    PAUSE ='PAUSE',
-    PROCESS='PROCESS',
-    DELETE='DELETE'
-}
-
-export enum ProductCollection{
-    DISH='DISH',
-    SALAD='SALAD',
-    DESSERT='DESSERT',
-    DRINK='DRINK',
-    OTHER='OTHER'
+export enum ProductCollection {
+  SINGLE_FLOWER = "SINGLE_FLOWER", // Dona gul
+  BOUQUET = "BOUQUET", // Guldasta
+  DRIED_FLOWER = "DRIED_FLOWER", // Quritilgan gul
+  GRADUATION = "GRADUATION", // Bitiruv guli
+  WEDDING = "WEDDING", // To'y guli
+  LUXURY_BOUQUET = "LUXURY_BOUQUET", // Premium guldasta
+  OTHER = "OTHER",
 }

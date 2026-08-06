@@ -1,32 +1,10 @@
-console.log("Users frontend javascript file");
+document.querySelectorAll('.bloom-select').forEach((select) => {
+  const sync = () => select.classList.toggle('active', select.value === 'ACTIVE');
+  select.addEventListener('change', sync);
+  sync();
+});
 
-$(function(){
-    $(".member-status").on("change", function(e){
-        const id = e.target.id;
-        console.log("id", id)
-
-        const memberStatus = $(`#${id}.member-status`).val();
-        console.log("MemberStatus", memberStatus);
-
-       // TODO Axious updateChosenUser
-       axios
-       .post("/admin/user/edit",{
-        _id: id,
-       "memberStatus":memberStatus
-   })
-   .then((response)=>{
-    console.log("Resopnse",response);
-    const result = response.data;
-    
-
-    if(result.data){
-        console.log("User updated!")
-        $(".member-status").blur();
-    }else 
-        alert("User update failed");
-   }).catch((err) => {
-        console.log(err);
-        alert("User update failed!");
-    })
-    })
-})
+document.getElementById('logoutLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  window.location.href = '/admin/login';
+});

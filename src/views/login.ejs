@@ -1,45 +1,47 @@
-<%- include('includes/header') %>
-
-<link rel="stylesheet" type="text/css" href="/css/login.css" />
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head', { title: 'Login', cssFile: 'login.css' }) %>
+</head>
 <body>
-  <form class="login-container" action="/admin/login" METHOD="POST">
-    <div class="login-frame">
-      <div class="login-top">
-        <span>Enter</span>
-        <div>Go back <a href="/admin" style="color: #6440fb">Home</a></div>
-        <p>
-          Not registered yet?
-          <a href="/admin/signup" style="color: #6440fb">Signup</a>
-        </p>
-      </div>
-      <div class="login-input-frame">
-        <div class="login-input-container">
-          <label>Restaurant *</label>
-          <input
-            type="text"
-            name="memberNick"
-            class="member-nick"
-            placeholder="Username"
-            value=""
-            required
-          />
-        </div>
-        <div class="login-input-container">
-          <label>Password *</label>
-          <input
-            type="password"
-            name="memberPassword"
-            class="member-password"
-            placeholder="Password"
-            value=""
-            required
-          />
-        </div>
-      </div>
-      <button class="login-btn btn" name="login" type="submit">Login</button>
-    </div>
-  </form>
-</body>
 
-<%- include('includes/footer') %>
+  <div class="bloom-page">
+    <div class="bloom-wash" aria-hidden="true"></div>
+
+    <%- include('partials/nav-admin', { active: 'login' }) %>
+
+    <main class="bloom-stage">
+      <div class="bloom-card">
+        <h1 class="bloom-title">Enter</h1>
+        <p class="bloom-subtext">Not registered yet? <a href="/admin/signup">Signup</a></p>
+
+        <form id="loginForm" action="/admin/login" method="POST">
+          <div class="bloom-field">
+            <label for="brandName">Brand name *</label>
+            <input type="text" name="memberNick" id="brandName" placeholder="Username" required />
+          </div>
+
+          <div class="bloom-field">
+            <label for="password">Password *</label>
+            <input type="password" name="memberPassword" id="password" placeholder="Password" required />
+          </div>
+
+          <% if (typeof error !== 'undefined' && error) { %>
+            <p class="bloom-error"><%= error %></p>
+          <% } else { %>
+            <p class="bloom-error" id="errorMsg"></p>
+          <% } %>
+
+          <button type="submit" class="bloom-submit">Login</button>
+        </form>
+      </div>
+    </main>
+
+    <footer class="bloom-footer">
+      <span></span>
+    </footer>
+  </div>
+
+  <script src="/js/login.js"></script>
+</body>
+</html>

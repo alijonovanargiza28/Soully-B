@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<%- include('partials/head', { title: 'Menu', cssFile: 'menu.css' }) %>
+</head>
+<body>
+
+ <div class="bloom-page">
+  <div class="bloom-wash" aria-hidden="true"></div>
+
+  <%- include('partials/nav-admin', { active: 'menu' }) %>
+
+  <main class="bloom-stage">
+    <h1 class="bloom-title">Flower Menu</h1>
+
+    <div class="bloom-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>T/r</th>
+            <th>Product Name</th>
+            <th>Collection</th>
+            <th>Size</th>
+            <th>Price</th>
+            <th>Left Count</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody id="productsBody">
+          <% products.forEach(function(p, i){ %>
+          <tr>
+            <td><%= i + 1 %></td>
+
+            <td><%= p.productName %></td>
+
+            <td><%= p.productCollection %></td>
+
+            <td><%= p.productSize %></td>
+
+            <td>$<%= p.productPrice %></td>
+
+            <td><%= p.productLeftCount %></td>
+
+            <td>
+              <select
+                class="bloom-select <%= p.productStatus === 'PROCESS' ? 'active' : '' %>"
+              >
+                <option value="PAUSE"
+                  <%= p.productStatus === 'PAUSE' ? 'selected' : '' %>>
+                  PAUSE
+                </option>
+
+                <option value="PROCESS"
+                  <%= p.productStatus === 'PROCESS' ? 'selected' : '' %>>
+                  PROCESS
+                </option>
+
+                <option value="DELETE"
+                  <%= p.productStatus === 'DELETE' ? 'selected' : '' %>>
+                  DELETE
+                </option>
+              </select>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bloom-actions">
+      <button
+        class="bloom-submit"
+        id="newProductBtn"
+        type="button"
+      >
+        New Product
+      </button>
+    </div>
+
+    <div class="bloom-floral-footer"></div>
+  </main>
+</div>
+<!-- New Product Modal -->
+<div class="bloom-modal-overlay" id="modalOverlay">
+  <div class="bloom-modal">
+
+    <div class="bloom-modal-head">
+      <h2>New Product</h2>
+      <button
+        type="button"
+        class="bloom-modal-close"
+        id="closeModalBtn"
+      >
+        &times;
+      </button>
+    </div>
+
+    <form
+      id="newProductForm"
+      action="/admin/product/create"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+
+      <div class="bloom-row">
+
+        <div class="bloom-field">
+          <label>Product Name *</label>
+
+          <input
+            type="text"
+            name="productName"
+            id="productName"
+            placeholder="Rose Bouquet"
+            required
+          />
+        </div>
+
+        <div class="bloom-field">
+          <label>Collection *</label>
+
+          <select
+            name="productCollection"
+            id="productCollection"
+            required
+          >
+            <option value="" selected disabled>
+              Select Collection
+            </option>
+
+            <option value="SINGLE_FLOWER">
+              Single Flower
+            </option>
+
+            <option value="BOUQUET">
+              Bouquet
+            </option>
+
+            <option value="DRIED_FLOWER">
+              Dried Flower
+            </option>
+
+            <option value="GRADUATION">
+              Graduation
+            </option>
+
+            <option value="WEDDING">
+              Wedding
+            </option>
+
+            <option value="LUXURY_BOUQUET">
+              Luxury Bouquet
+            </option>
+
+            <option value="OTHER">
+              Other
+            </option>
+
+          </select>
+        </div>
+
+      </div>
+
+      <div class="bloom-row">
+
+        <div class="bloom-field">
+          <label>Price *</label>
+
+          <input
+            type="number"
+            name="productPrice"
+            id="productPrice"
+            required
+          />
+        </div>
+
+        <div class="bloom-field">
+          <label>Left Count *</label>
+
+          <input
+            type="number"
+            name="productLeftCount"
+            id="productLeftCount"
+            required
+          />
+        </div>
+
+      </div>
+
+      <div class="bloom-row">
+
+        <div class="bloom-field">
+
+          <label>Size</label>
+
+          <select
+            name="productSize"
+            id="productSize"
+          >
+            <option value="NORMAL" selected>
+              Normal
+            </option>
+
+            <option value="SMALL">
+              Small
+            </option>
+
+            <option value="LARGE">
+              Large
+            </option>
+
+          </select>
+
+        </div>
+
+        <div class="bloom-field">
+
+          <label>Status</label>
+
+          <select
+            name="productStatus"
+            id="productStatus"
+          >
+            <option value="PAUSE" selected>
+              Pause
+            </option>
+
+            <option value="PROCESS">
+              Process
+            </option>
+
+            <option value="DELETE">
+              Delete
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+      <div class="bloom-field bloom-field--full">
+
+        <label>Description</label>
+
+        <textarea
+          name="productDesc"
+          id="productDesc"
+          rows="4"
+        ></textarea>
+
+      </div>
+
+      <div class="bloom-upload">
+
+        <label>Product Images</label>
+
+        <div class="bloom-upload-row">
+
+          <input
+            type="file"
+            id="productImages"
+            name="productImages"
+            accept=".jpg,.jpeg,.png"
+            multiple
+          />
+
+          <button
+            type="button"
+            id="uploadImagesBtn"
+          >
+            Upload Images
+          </button>
+
+        </div>
+
+        <p class="bloom-hint">
+          Only JPG, JPEG and PNG files.
+        </p>
+
+        <div
+          id="previewGrid"
+          class="bloom-preview-grid"
+        ></div>
+
+      </div>
+
+      <p
+        class="bloom-error"
+        id="productErrorMsg"
+      ></p>
+
+      <div class="bloom-modal-actions">
+
+        <button
+          type="button"
+          class="bloom-btn-ghost"
+          id="cancelModalBtn"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="bloom-submit"
+        >
+          Save Product
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+<script src="/js/menu.js"></script>
+</body>
+</html>
