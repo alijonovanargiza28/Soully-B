@@ -15,7 +15,6 @@ memberController.Signup);
 
 router.post(
   "/member/logout",
-  memberController.verifyAuth,
   memberController.logout,
 );
 

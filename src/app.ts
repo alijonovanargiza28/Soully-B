@@ -29,12 +29,16 @@ app.use(cookieParser());
 app.use(
   session({
     secret: String(process.env.SESSION_SECRET),
-    cookie: {
-      maxAge: 1000 * 3600 * 3, //3h
-    },
     store: store,
-    resave: true, //10:30:auth =>13:30
-    saveUninitialized: true,
+
+    resave: false,
+
+    saveUninitialized: false,
+
+    cookie: {
+      maxAge: 1000 * 3600 * 3,
+      httpOnly: true,
+    },
   }),
 );
 app.use(function (req, res, next) {

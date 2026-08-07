@@ -67,17 +67,23 @@ memberController.Login = async (req: Request, res: Response) => {
   }
 };
 
-memberController.logout =(req:ExtendedRequest, res:Response)=>{
-    try{
-     console.log("logout")
-     res.cookie("accessToken", null,{maxAge:0, httpOnly:true})
-     res.status(HttpCode.OK).json({logout:true})
-     } catch (err) {
-    console.log("Error, Login", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standard.code).json(Errors.standard);
+memberController.logout = (req: ExtendedRequest, res: Response) => {
+  try {
+    console.log("logout");
+
+    res.clearCookie("accessToken");
+
+    return res.redirect("/admin/login");
+  } catch (err) {
+    console.log("Error, Logout", err);
+
+    if (err instanceof Errors) {
+      return res.status(err.code).json(err);
+    }
+
+    return res.status(Errors.standard.code).json(Errors.standard);
   }
-}
+};
 
 memberController.getMemberDetail = async(req: ExtendedRequest, res: Response) => {
   try {
@@ -107,20 +113,31 @@ memberController.getTopUsers = async (req: Request, res: Response) => {
   }
 };
 
-memberController.verifyAuth = async(req: ExtendedRequest, res: Response, next:NextFunction) => {
+memberController.verifyAuth = async (
+  req: ExtendedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    
     const token = req.cookies["accessToken"];
-    if (token) req.member = await authService.checkAuth(token);
 
-    if(!req.member)
-        throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED)
+    if (token) {
+      req.member = await authService.checkAuth(token);
+    }
+
+    if (!req.member) {
+      throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
+    }
 
     next();
   } catch (err) {
     console.log("Error, verifyAuth", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standard.code).json(Errors.standard);
+
+    if (err instanceof Errors) {
+      return res.status(err.code).json(err);
+    }
+
+    return res.status(Errors.standard.code).json(Errors.standard);
   }
 };
 

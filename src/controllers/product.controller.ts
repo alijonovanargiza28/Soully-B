@@ -69,11 +69,7 @@ productController.getProduct =async(req:ExtendedRequest, res:Response)=>{
 
 productController.createNewProduct = async(req:AdminRequest, res: Response)=>{
     try{ 
-        console.log("createNewProduct")
-        console.log("req.body", req.body);
-        console.log("BODY:", req.body);
-        console.log("FILES:", req.files);
-
+       
         const data: ProductInput = req.body;
         data.productImages = req.files?.map((ele) => ele.path);
 

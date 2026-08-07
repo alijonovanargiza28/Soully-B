@@ -26,16 +26,17 @@
           <tbody>
             <% users.forEach(function(u, i) { %>
             <tr>
-              <td><%= i + 1 %></td>
-              <td><%= u.name %></td>
-              <td><%= u.phone %></td>
-              <td>
-                <select class="bloom-select <%= u.status === 'ACTIVE' ? 'active' : '' %>">
-                  <option <%= u.status === 'ACTIVE' ? 'selected' : '' %>>ACTIVE</option>
-                  <option <%= u.status === 'BLOCKED' ? 'selected' : '' %>>BLOCKED</option>
+              <td><%= index+1 %></td>
+              <td><%= value.memberNick %></td>
+              <td><%= value.memberPhone %></td>
+              <td style="width: 13%">
+                <select class="spec-select member-status" id="<%= value._id%>">
+                  <option value="ACTIVE" <%= value.memberStatus ==='ACTIVE'? 'selected': '' %>>ACTIVE</option>
+                  <option value="BLOCK"<%= value.memberStatus ==='BLOCK'? 'selected': '' %>>BLOCK</option>
+                  <option value="DELETE"<%= value.memberStatus ==='DELETE'? 'selected': '' %>>DELETE</option>
                 </select>
               </td>
-            </tr>
+              </tr>
             <% }); %>
           </tbody>
         </table>
