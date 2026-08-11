@@ -1,52 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<%- include('partials/head', { title: 'Users', cssFile: 'users.css' }) %>
+
+  <%- include('partials/head', {
+    title: 'Users',
+    cssFile: 'users.css'
+  }) %>
+
 </head>
+
+
 <body>
 
   <div class="bloom-page">
-    <div class="bloom-wash" aria-hidden="true"></div>
 
-    <%- include('partials/nav-admin', { active: 'users' }) %>
+    <div
+      class="bloom-wash"
+      aria-hidden="true"
+    ></div>
+
+
+    <!-- ADMIN NAVBAR -->
+
+    <%- include('partials/nav-admin', {
+      active: 'users'
+    }) %>
+
+
+    <!-- MAIN -->
 
     <main class="bloom-stage">
-      <h1 class="bloom-title">All Users List</h1>
+
+      <h1 class="bloom-title">
+        All Users List
+      </h1>
+
+
+      <!-- USERS TABLE -->
 
       <div class="bloom-table-wrap">
+
         <table>
+
           <thead>
+
             <tr>
+
               <th>No</th>
+
               <th>Name</th>
+
               <th>Phone</th>
+
               <th>Status</th>
+
             </tr>
+
           </thead>
+
+
           <tbody>
-            <% users.forEach(function(u, i) { %>
-            <tr>
-              <td><%= index+1 %></td>
-              <td><%= value.memberNick %></td>
-              <td><%= value.memberPhone %></td>
-              <td style="width: 13%">
-                <select class="spec-select member-status" id="<%= value._id%>">
-                  <option value="ACTIVE" <%= value.memberStatus ==='ACTIVE'? 'selected': '' %>>ACTIVE</option>
-                  <option value="BLOCK"<%= value.memberStatus ==='BLOCK'? 'selected': '' %>>BLOCK</option>
-                  <option value="DELETE"<%= value.memberStatus ==='DELETE'? 'selected': '' %>>DELETE</option>
-                </select>
-              </td>
+
+            <% if (users && users.length > 0) { %>
+
+              <% users.forEach(function(u, i) { %>
+
+                <tr>
+
+                  <td>
+                    <%= i + 1 %>
+                  </td>
+
+
+                  <td>
+                    <%= u.memberNick %>
+                  </td>
+
+
+                  <td>
+                    <%= u.memberPhone || '-' %>
+                  </td>
+
+
+                  <td style="width: 13%">
+
+                    <select
+                      class="spec-select member-status"
+                      data-id="<%= u._id %>"
+                    >
+
+                      <option
+                        value="ACTIVE"
+                        <%= u.memberStatus === 'ACTIVE'
+                          ? 'selected'
+                          : '' %>
+                      >
+                        ACTIVE
+                      </option>
+
+
+                      <option
+                        value="BLOCK"
+                        <%= u.memberStatus === 'BLOCK'
+                          ? 'selected'
+                          : '' %>
+                      >
+                        BLOCK
+                      </option>
+
+
+                      <option
+                        value="DELETE"
+                        <%= u.memberStatus === 'DELETE'
+                          ? 'selected'
+                          : '' %>
+                      >
+                        DELETE
+                      </option>
+
+                    </select>
+
+                  </td>
+
+                </tr>
+
+              <% }); %>
+
+            <% } else { %>
+
+              <tr>
+
+                <td
+                  colspan="4"
+                  style="text-align: center;"
+                >
+                  No users found
+                </td>
+
               </tr>
-            <% }); %>
+
+            <% } %>
+
           </tbody>
+
         </table>
+
       </div>
 
-      <div class="bloom-floral-footer">
-      </div>
+
+      <div class="bloom-floral-footer"></div>
+
     </main>
+
   </div>
 
+
+  <!-- USERS JS -->
+
   <script src="/js/users.js"></script>
+
 </body>
+
 </html>
