@@ -1,29 +1,50 @@
+import ConnectMongoDB from "connect-mongodb-session";
+import cookieParser from "cookie-parser";
 import cors from "cors";
-import express from "express";
+import express, { ErrorRequestHandler } from "express";
+import session from "express-session";
+import morgan from "morgan";
+import multer from "multer";
 import path from "path";
+import { MORGAN_FORMAT } from "./libs/config";
 import router from "./router";
 import routerAdmin from "./routerAdmin";
-import morgan from "morgan";
-import { MORGAN_FORMAT } from "./libs/config";
-import cookieParser from "cookie-parser";
-import session from "express-session";
-import ConnectMongoDB from "connect-mongodb-session";
-import { T } from "./libs/types/common";
 
 const MongoDBStore = ConnectMongoDB(session);
-const store = new MongoDBStore({
+export const store = new MongoDBStore({
   uri: String(process.env.MONGO_URL),
   collection: "sessions",
 });
 
 /**1- ENTERANCE */
 const app = express();
+if (process.env.TRUST_PROXY === "1") app.set("trust proxy", 1);
+app.disable("x-powered-by");
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static("./uploads"));
+app.use(
+  "/uploads",
+  express.static(process.env.UPLOAD_ROOT || path.resolve(__dirname, "../uploads")),
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan(MORGAN_FORMAT));
-app.use(cors({ credentials: true, origin: true }));
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3000,http://127.0.0.1:3000")
+  .split(",")
+  .map((origin) => origin.trim());
+app.use(cors({ credentials: true, origin: allowedOrigins }));
+app.use((req, res, next) => {
+  const origin = req.get("origin");
+  if (
+    !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
+    origin &&
+    !allowedOrigins.includes(origin) &&
+    origin !== `${req.protocol}://${req.get("host")}`
+  ) {
+    res.status(403).json({ message: "This request origin is not allowed." });
+    return;
+  }
+  next();
+});
 app.use(cookieParser());
 /**2 - Session */
 app.use(
@@ -42,8 +63,7 @@ app.use(
   }),
 );
 app.use(function (req, res, next) {
-  const sessionInstance = req.session as T;
-  res.locals.member = sessionInstance.member;
+  res.locals.member = req.session.member;
   next();
 });
 
@@ -55,5 +75,18 @@ app.set("view engine", "ejs");
 //BSSR: EJS
 app.use("/admin", routerAdmin); //BSSR: EJS
 app.use("/", router); // SPA: REACT
+
+const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
+  if (
+    error instanceof multer.MulterError ||
+    error.message === "Only JPG, JPEG and PNG images are allowed."
+  ) {
+    res.status(400).json({ message: error.message });
+    return;
+  }
+  console.error("Request failed", error);
+  res.status(500).json({ message: "Something went wrong" });
+};
+app.use(handleError);
 
 export default app;

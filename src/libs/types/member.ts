@@ -1,8 +1,7 @@
-import { ObjectId } from "mongoose";
-import { MemberType } from "../enums/member.enum";
 import { Request } from "express";
-import MemberService from "../../models/Member.service";
-import { Session } from "express-session";
+import { Types } from "mongoose";
+import { MemberStatus, MemberType } from "../enums/member.enum";
+type ObjectId = Types.ObjectId;
 export interface Member {
   _id: ObjectId;
   memberType: MemberType;
@@ -12,7 +11,7 @@ export interface Member {
   memberAdress?: string;
   memberDesc?: string;
   memberImage?: string;
-  memberStatus?: MemberService;
+  memberStatus?: MemberStatus;
   memberPoints: number;
   createdAt: Date;
   updatedAt: Date;
@@ -45,15 +44,18 @@ export interface MemberUpdateInput {
   memberStatus?: string;
 }
 
-export interface ExtendedRequest extends Request {
-  member: Member;
-  file: Express.Multer.File;
-  files: Express.Multer.File[];
+// Authentication middleware populates these fields only after verification.
+declare global {
+  namespace Express {
+    interface Request {
+      member?: Member;
+    }
+  }
 }
-
-export interface AdminRequest extends Request {
-  member: Member;
-  session: Session & { member: Member };
-  file: Express.Multer.File;
-  files: Express.Multer.File[];
+declare module "express-session" {
+  interface SessionData {
+    member?: Member;
+  }
 }
+export type ExtendedRequest = Request;
+export type AdminRequest = Request;

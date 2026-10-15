@@ -1,113 +1,110 @@
-import Errors, { HttpCode, Message } from "../libs/Errors";
-import { T } from "../libs/types/common";
 import { Request, Response } from "express";
-import MemberService from "../models/Member.service";
-import ProductService from "../models/Product.service";
-import { ProductInput, ProductInquery } from "../libs/types/product";
+import { promises as fs } from "fs";
+import path from "path";
+import { ProductCollection, ProductSize, ProductStatus } from "../libs/enums/product.enum";
+import Errors, { HttpCode, Message } from "../libs/Errors";
 import { AdminRequest, ExtendedRequest } from "../libs/types/member";
-import { ProductCollection } from "../libs/enums/product.enum";
-const productService = new ProductService()
+import { ProductInput, ProductUpdateInput } from "../libs/types/product";
+import { uploadedFiles } from "../libs/utils/request";
+import ProductService from "../models/Product.service";
 
-const productController: T ={};
-
-productController.getProducts = async(req:Request, res:Response)=>{
-    try{
-        console.log("getProducts")
-        const {order,page,limit, productCollection, search} = req.query
-        const inquery : ProductInquery = {//biz get orqali malumot yuboryogan paytda url ichidan foydalanamiz query and params
-                                             //paramn urlni bir qismi aniq  bir malumotni olish uchun
-            order:String(order),           //har qanday typda kelganini stringag query dan kelgan malumot
-            page:Number(page),
-            limit:Number(limit),
-            
-        }
-        if (productCollection)inquery.productCollection = productCollection as ProductCollection
-        if(search)inquery.search = String(search)
-        const result = await productService.getProducts(inquery)
-         res.status(HttpCode.OK).json({result})
-    }catch(err){
-        console.log("Error,getProduct", err);
-        if(err instanceof Errors)res.status(err.code).json(err);
-        else res.status(Errors.standard.code).json(Errors.standard);
+const productService = new ProductService();
+function sendError(res: Response, error: unknown): void {
+  if (error instanceof Errors) {
+    res.status(error.code).json({ message: error.message });
+    return;
+  }
+  const failure = error as {
+    code?: number;
+    name?: string;
+    errors?: Record<string, { message: string }>;
+  };
+  if (failure?.code === 11000) {
+    res.status(HttpCode.CONFLICT).json({ message: "A product with this name already exists." });
+    return;
+  }
+  if (failure?.name === "ValidationError") {
+    res.status(400).json({
+      message: Object.values(failure.errors ?? {})
+        .map((item) => item.message)
+        .join(" "),
+    });
+    return;
+  }
+  console.error("Product request failed", error);
+  res.status(500).json({ message: Message.SOMETHING_WENT_WRONG });
 }
+async function discardNewUploads(files: Express.Multer.File[] = []): Promise<void> {
+  // These UUID paths belong only to the failed request, never existing product assets.
+  await Promise.all(files.map((file) => fs.unlink(file.path).catch(() => undefined)));
 }
-productController.getAllProducts = async(req:Request, res: Response)=>{
-    try{ 
-        console.log("getAllProducts")
-        const data = await productService.getAllProduct();
-        console.log("data",data)
-
-        res.render("menu", {products:data})
-    }catch(err){
-        console.log("Error,getAllProducts", err);
-        if(err instanceof Errors)res.status(err.code).json(err);
-        else res.status(Errors.standard.code).json(Errors.standard);
-    }
-};
-
-productController.getProduct =async(req:ExtendedRequest, res:Response)=>{
+const productController = {
+  async getProducts(req: Request, res: Response) {
     try {
-        console.log("getProduct");
-        const {id} = req.params;
-
-        console.log("------",id)
-        if (typeof id !== "string") {
-          throw new Errors(HttpCode.BAD_REQUEST, Message.NO_DATA_FOUND);
-        }
-        console.log(req.member)
-        const memberId = req.member?._id ?? null;
-        const result = await productService.getProduct(memberId, id)
-
-        res.status(HttpCode.OK).json(result)
-    } catch (err) {
-        console.log("Error,getProduct", err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standard.code).json(Errors.standard);
+      const { products, pagination } = await productService.getProductPage({
+        page: Number(req.query.page ?? 1),
+        limit: Number(req.query.limit ?? 8),
+        order: String(req.query.order ?? "createdAt"),
+        ...(req.query.productCollection && req.query.productCollection !== "ALL"
+          ? { productCollection: String(req.query.productCollection) as ProductCollection }
+          : {}),
+        ...(req.query.search ? { search: String(req.query.search).slice(0, 200) } : {}),
+      });
+      res.status(200).json({ result: products, pagination });
+    } catch (error) {
+      sendError(res, error);
     }
-}
-
-
-productController.createNewProduct = async(req:AdminRequest, res: Response)=>{
-    try{ 
-       
-        const data: ProductInput = req.body;
-        data.productImages = req.files?.map((ele) => ele.path);
-
-        console.log("DATA:", data);
-
-        const result = await productService.createNewProduct(data);
-
-        console.log("RESULT:", result);
-        
-        if(!req.files?.length)
-            throw new Errors(HttpCode.INTERNAL_SERVER_ERROR, Message.CREATE_FAILED)
-        data.productImages = req.files?.map(ele=>{
-          return ele.path;
-        });
-       
-    await productService.createNewProduct(data);
-    res.redirect("/admin/product/all");
-    }catch(err){
-        console.log("Error,createNewProduct", err);
-        const message = 
-        err instanceof Errors ? err.message:Message.SOMETHING_WENT_WRONG
-        res.send
-     (`<script>alert("${message}"); window.location.replace("/admin/product/all")</script>`)
-
+  },
+  async getAllProducts(req: Request, res: Response) {
+    try {
+      res.render("menu", {
+        products: await productService.getAllProduct(),
+        saved: req.query.saved === "created" || req.query.saved === "updated",
+        collections: Object.values(ProductCollection),
+        sizes: Object.values(ProductSize),
+        statuses: Object.values(ProductStatus),
+      });
+    } catch (error) {
+      sendError(res, error);
     }
+  },
+  async getProduct(req: ExtendedRequest, res: Response) {
+    try {
+      res.status(200).json(await productService.getProduct(req.member?._id, String(req.params.id)));
+    } catch (error) {
+      sendError(res, error);
+    }
+  },
+  async createNewProduct(req: AdminRequest, res: Response) {
+    try {
+      const files = uploadedFiles(req);
+      if (!files.length) throw new Errors(400, "Upload at least one product image.");
+      const input: ProductInput = {
+        ...req.body,
+        productImages: files.map((file) => `uploads/products/${path.basename(file.path)}`),
+      };
+      res.status(201).json({ data: await productService.createNewProduct(input) });
+    } catch (error) {
+      await discardNewUploads(uploadedFiles(req));
+      sendError(res, error);
+    }
+  },
+  async updateChosenProduct(req: AdminRequest, res: Response) {
+    try {
+      const images = uploadedFiles(req).map(
+        (file) => `uploads/products/${path.basename(file.path)}`,
+      );
+      const input: ProductUpdateInput = {
+        ...req.body,
+        ...(images?.length ? { productImages: images } : {}),
+      };
+      res
+        .status(200)
+        .json({ data: await productService.updateChosenProduct(String(req.params.id), input) });
+    } catch (error) {
+      await discardNewUploads(uploadedFiles(req));
+      sendError(res, error);
+    }
+  },
 };
-productController.updateChosenProduct = async(req:Request, res: Response)=>{
-    try{ 
-        console.log("updateChosenProduct")
-        const id = req.params.id as string;
-        const result = await productService.updateChosenProduct(id , req.body)
-
-        res.status(HttpCode.OK).json({data:result})
-    }catch(err){
-        console.log("Error,updateChosenProduct", err);
-        if(err instanceof Errors)res.status(err.code).json(err);
-        else res.status(Errors.standard.code).json(Errors.standard);
-    }
-};
-
 export default productController;

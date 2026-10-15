@@ -1,74 +1,100 @@
-import OrderItemModel from "../schema/OrderItem.model";
-import OrderModel from "../schema/Order.model";
+import { shapeIntoMongooseObjectId } from "../libs/config";
+import { OrderStatus } from "../libs/enums/order.enum";
+import { ProductStatus } from "../libs/enums/product.enum";
+import Errors, { HttpCode, Message } from "../libs/Errors";
 import { Member } from "../libs/types/member";
 import { Order, OrderInquiry, OrderItemInput, OrderUpdateInput } from "../libs/types/order";
-import { shapeIntoMongooseObjectId } from "../libs/config";
-import Errors, { HttpCode, Message } from "../libs/Errors";
-import { ObjectId } from "mongoose";
-import { OrderStatus } from "../libs/enums/order.enum";
+import OrderModel from "../schema/Order.model";
+import OrderItemModel from "../schema/OrderItem.model";
+import ProductModel from "../schema/Product.model";
 import MemberService from "./Member.service";
 
 class OrderService {
-  private readonly orderModel;
-  private readonly orderItemModel;
-  memberService: any;
+  private readonly orderModel = OrderModel;
+  private readonly orderItemModel = OrderItemModel;
+  private readonly memberService = new MemberService();
 
-  constructor() {
-    this.orderModel = OrderModel;
-    this.orderItemModel = OrderItemModel;
-    this.memberService = new MemberService();
-  }
-  public async createOrder(
-    member: Member, //kim order hosil qilyabdi
-    input: OrderItemInput[], //nimani buyurtma qilyotgani
-  ): Promise<Order> {
-    const memberId = shapeIntoMongooseObjectId(member._id);
-    const amount = input.reduce((accumulator: number, item: OrderItemInput) => {//reduce darstavkamizni umumiy narxini hisobledi 2ta agrgumenti boladi initial vaue
-      return accumulator + item.itemPrice * item.itemQuantity;
-    }, 0);
-    const delivery = amount < 100 ? 5 : 0;
-    try {
-      const newOrder: Order = await this.orderModel.create({
-        orderTotal: amount + delivery, //qiymati teng boladi
-        orderDelivery: delivery,
-        memberId: memberId, //kim murojat qilyotgani
-      });
-      
-      const orderId = newOrder._id;
-      console.log("orderId", orderId);
-      await this.recordOrderItem(orderId, input);
-
-      return newOrder;
-    } catch (err) {
-      console.log("Error,model:createOrder", err);
+  public async createOrder(member: Member, input: OrderItemInput[]): Promise<Order> {
+    if (!Array.isArray(input) || input.length === 0 || input.length > 100) {
       throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
     }
-  }
-  private async recordOrderItem(
-    orderId: ObjectId,
-    input: OrderItemInput[],
-  ): Promise<void> {
-    const promisedList = input.map(async (item: OrderItemInput) => {
-      item.orderId = orderId;
-      item.productId = shapeIntoMongooseObjectId(item.productId);
-      await this.orderItemModel.create(item);
-      return "Inserted";
-      
+    const quantities = new Map<string, number>();
+    for (const item of input) {
+      if (
+        !item ||
+        !Number.isSafeInteger(item.itemQuantity) ||
+        item.itemQuantity < 1 ||
+        item.itemQuantity > 999
+      ) {
+        throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
+      }
+      const id = String(shapeIntoMongooseObjectId(item.productId));
+      const quantity = (quantities.get(id) || 0) + item.itemQuantity;
+      if (quantity > 999) throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
+      quantities.set(id, quantity);
+    }
+    const products = await ProductModel.find({
+      _id: { $in: [...quantities.keys()] },
+      productStatus: ProductStatus.PROCESS,
+    })
+      .lean()
+      .exec();
+    if (products.length !== quantities.size)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.NO_DATA_FOUND);
+    const items = products.map((product) => {
+      const quantity = quantities.get(String(product._id))!;
+      if (
+        product.productLeftCount < quantity ||
+        !Number.isFinite(product.productPrice) ||
+        product.productPrice < 0
+      ) {
+        throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
+      }
+      return { productId: product._id, itemQuantity: quantity, itemPrice: product.productPrice };
     });
-    console.log("promisedList", promisedList);
-    const orderItemsState = await Promise.all(promisedList);
-    console.log("orderItemsState", orderItemsState);
+    // Prices are always read from the catalog, never trusted from the browser.
+    const amount =
+      Math.round(
+        items.reduce((total, item) => total + item.itemPrice * item.itemQuantity, 0) * 100,
+      ) / 100;
+    const delivery = amount < 100 ? 5 : 0;
+    const order = await this.orderModel.create({
+      orderTotal: amount + delivery,
+      orderDelivery: delivery,
+      memberId: member._id,
+    });
+    try {
+      await this.orderItemModel.insertMany(
+        items.map((item) => ({ ...item, orderId: order._id })),
+        { ordered: true },
+      );
+    } catch (error) {
+      await this.orderItemModel.deleteMany({ orderId: order._id });
+      await this.orderModel.deleteOne({ _id: order._id });
+      throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
+    }
+    return order as unknown as Order;
   }
-  public async getMyOrders(
-    member: Member,
-    inquiry: OrderInquiry,
-  ): Promise<Order[]> {
-    const memberId = shapeIntoMongooseObjectId(member._id);
-    const matches = { memberId: memberId, orderStatus: inquiry.orderStatus };
 
-    const result = await this.orderModel
+  public async getMyOrders(member: Member, inquiry: OrderInquiry): Promise<Order[]> {
+    if (
+      !Number.isSafeInteger(inquiry.page) ||
+      inquiry.page < 1 ||
+      !Number.isSafeInteger(inquiry.limit) ||
+      inquiry.limit < 1 ||
+      inquiry.limit > 100 ||
+      !Object.values(OrderStatus).includes(inquiry.orderStatus)
+    ) {
+      throw new Errors(HttpCode.BAD_REQUEST, Message.NO_DATA_FOUND);
+    }
+    return this.orderModel
       .aggregate([
-        { $match: matches },
+        {
+          $match: {
+            memberId: shapeIntoMongooseObjectId(member._id),
+            orderStatus: inquiry.orderStatus,
+          },
+        },
         { $sort: { updatedAt: -1 } },
         { $skip: (inquiry.page - 1) * inquiry.limit },
         { $limit: inquiry.limit },
@@ -90,35 +116,31 @@ class OrderService {
         },
       ])
       .exec();
-    if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
-
-    return result;
   }
-  public async updateOrder(
-    member: Member,
-    input: OrderUpdateInput,
-  ): Promise<Order> {
-    const memberId = shapeIntoMongooseObjectId(member._id),
-      orderId = shapeIntoMongooseObjectId(input.orderId),
-      orderStatus = input.orderStatus;
 
+  public async updateOrder(member: Member, input: OrderUpdateInput): Promise<Order> {
+    const previousStatus =
+      input.orderStatus === OrderStatus.FINISH ? OrderStatus.PROCESS : OrderStatus.PAUSE;
+    if (
+      ![OrderStatus.PROCESS, OrderStatus.DELETE, OrderStatus.FINISH].includes(input.orderStatus)
+    ) {
+      throw new Errors(HttpCode.BAD_REQUEST, Message.UPDATE_FAILED);
+    }
+    // Match ownership and previous state atomically to prevent repeated transitions.
     const result = await this.orderModel
-      .findByIdAndUpdate(
+      .findOneAndUpdate(
         {
-          memberId: memberId,
-          _id: orderId,
+          _id: shapeIntoMongooseObjectId(input.orderId),
+          memberId: shapeIntoMongooseObjectId(member._id),
+          orderStatus: previousStatus,
         },
-        { orderStatus: orderStatus },
-        { new: true },
+        { $set: { orderStatus: input.orderStatus } },
+        { new: true, runValidators: true },
       )
       .exec();
-    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
-
-    if (orderStatus === OrderStatus.PROCESS) {
-      await this.memberService.addUserPoint(member, 1);
-    }
-    return result;
+    if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.UPDATE_FAILED);
+    if (input.orderStatus === OrderStatus.PROCESS) await this.memberService.addUserPoint(member, 1);
+    return result as unknown as Order;
   }
 }
-
 export default OrderService;

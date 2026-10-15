@@ -1,224 +1,411 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500&display=swap');
 
-:root {
-  --bg-deep: #0a0c09;
-  --wash-rose: #3a1f22;
-  --wash-moss: #16211a;
-  --gold: white;
-  --cream: #f4ead9;
-  --rose: #c97b86;
-}
-
 * {
   box-sizing: border-box;
 }
 
-.bloom-page {
-  position: relative;
-  min-height: 100vh;
-  background: var(--bg-deep);
-  overflow: hidden;
-  font-family: 'Inter', sans-serif;
-  color: var(--cream);
+html,
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100%;
 }
+
+/* =========================
+   BODY
+========================= */
+
+body {
+  background: #FBECEF !important;
+  color: #4A3035 !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* =========================
+   PAGE
+========================= */
+
+.bloom-page {
+  position: relative !important;
+  min-height: 100vh !important;
+  width: 100% !important;
+
+  overflow: hidden !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #FFF7F8 0%,
+      #FBECEF 50%,
+      #F3D7DC 100%
+    ) !important;
+
+  color: #4A3035 !important;
+}
+
+/* =========================
+   BACKGROUND
+========================= */
 
 .bloom-wash {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at top left,
-    #FFEFF4,
-    #F8DDE5 40%,
-    #EEF8F0 75%,
-    #DDEEDF 100%
-  );
+  position: absolute !important;
+  inset: 0 !important;
+
+  pointer-events: none !important;
+
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(255,255,255,0.95),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(217,143,157,0.20),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #FFF7F8 0%,
+      #FBECEF 50%,
+      #F3D7DC 100%
+    ) !important;
 }
 
-/* Nav */
+/* =========================
+   NAV
+========================= */
 
 .bloom-nav {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  padding: 40px 24px 0;
-  text-align: center;
+  position: relative !important;
+  z-index: 100 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+
+  gap: 18px !important;
+
+  padding: 40px 24px 0 !important;
+
+  text-align: center !important;
 }
+
+/* LOGO */
 
 .bloom-mark {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 4cap;
-  font-weight: 500;
-  letter-spacing: 0.42em;
-  color: #be7783;
-  opacity: 0.8;
+  font-family: 'Cormorant Garamond', serif !important;
+
+  font-size: 42px !important;
+
+  color: #7A3F4A !important;
+
+  opacity: 1 !important;
 }
+
+/* NAV LINKS */
 
 .bloom-links {
-  display: flex;
-  align-items: center;
-  gap: 48px;
+  display: flex !important;
+
+  align-items: center !important;
+
+  gap: 48px !important;
 }
 
+.bloom-links a,
 .bloom-link {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 24px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: #ad7111;
-  text-decoration: none;
-  opacity: 0.72;
-  transition: opacity 0.2s ease, letter-spacing 0.2s ease;
+  font-family: 'Cormorant Garamond', serif !important;
+
+  font-size: 24px !important;
+
+  color: #914F5C !important;
+
+  opacity: 1 !important;
+
+  text-decoration: none !important;
 }
 
+.bloom-links a:hover,
+.bloom-links a.is-active,
 .bloom-link:hover,
-.bloom-link:focus-visible,
 .bloom-link.is-active {
-  opacity: 1;
-  letter-spacing: 0.12em;
+  color: #7A3F4A !important;
+
+  opacity: 1 !important;
 }
 
-.bloom-link:focus-visible {
-  outline: 1px solid var(--gold);
-  outline-offset: 6px;
-}
-
-/* Stage */
+/* =========================
+   STAGE
+========================= */
 
 .bloom-stage {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 40px 24px 80px;
-  min-height: calc(100vh - 160px);
+  position: relative !important;
+
+  z-index: 10 !important;
+
+  display: flex !important;
+
+  flex-direction: column !important;
+
+  align-items: center !important;
+
+  justify-content: flex-start !important;
+
+  width: 100% !important;
+
+  min-height: calc(100vh - 160px) !important;
+
+  padding: 40px 24px 80px !important;
 }
 
-/* Card */
+/* =========================
+   LOGIN CARD
+========================= */
 
 .bloom-card {
-  width: 100%;
-  max-width: 440px;
-  margin-top: 30px;
-  background:#f0bfc5;
-  border: 1px solid rgba(197, 141, 50, 0.35);
-  border-radius: 22px;
-  padding: 44px 44px 40px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.5);
+  width: 100% !important;
+
+  max-width: 440px !important;
+
+  margin-top: 30px !important;
+
+  padding: 44px !important;
+
+  background: #FFFFFF !important;
+
+  border: 2px solid #F3D7DC !important;
+
+  border-radius: 24px !important;
+
+  box-shadow:
+    0 25px 60px rgba(122,63,74,0.20) !important;
 }
 
+/* =========================
+   ENTER
+========================= */
+
+.bloom-card h1.bloom-title,
 .bloom-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 500;
-  font-size: 34px;
-  letter-spacing: 0.1em;
-  text-align: center;
-  margin: 0 0 8px;
-  color: var(--cream);
+  margin: 0 0 8px !important;
+
+  font-family: 'Cormorant Garamond', serif !important;
+
+  font-size: 36px !important;
+
+  color: #7A3F4A !important;
+
+  text-align: center !important;
 }
 
+/* =========================
+   NOT REGISTERED
+========================= */
+
+.bloom-card p.bloom-subtext,
 .bloom-subtext {
-  text-align: center;
-  font-size: 14px;
-  color: var(--cream);
-  opacity: 0.65;
-  margin: 0 0 30px;
+  margin: 0 0 30px !important;
+
+  color: #765C62 !important;
+
+  opacity: 1 !important;
+
+  text-align: center !important;
 }
 
-.bloom-subtext a {
-  color: var(--gold);
-  text-decoration: none;
-  border-bottom: 1px solid var(--gold);
+/* =========================
+   SIGNUP
+========================= */
+
+.bloom-card p.bloom-subtext a {
+  color: #C97888 !important;
+
+  font-family: 'Cormorant Garamond', serif !important;
+
+  font-size: 17px !important;
+
+  font-weight: 600 !important;
+
+  text-decoration: none !important;
+
+  border-bottom: 1px solid #C97888 !important;
 }
 
-.bloom-field { margin-bottom: 20px; }
+.bloom-card p.bloom-subtext a:hover {
+  color: #7A3F4A !important;
 
-.bloom-field label {
-  display: block;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 15px;
-  letter-spacing: 0.06em;
-  color: black;
-  margin-bottom: 7px;
+  border-color: #7A3F4A !important;
 }
 
-.bloom-field input {
-  width: 100%;
-  padding: 13px 15px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  color: white;
-  background: rgba(244, 234, 217, 0.06);
-  border: 1px solid rgba(197, 141, 50, 0.3);
-  border-radius: 12px;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+/* =========================
+   FIELD
+========================= */
+
+.bloom-card .bloom-field {
+  margin-bottom: 20px !important;
 }
 
-.bloom-field input::placeholder {
-  color:white;
+/* =========================
+   LABEL
+========================= */
+
+.bloom-card .bloom-field label {
+  display: block !important;
+
+  margin-bottom: 8px !important;
+
+  font-family: 'Cormorant Garamond', serif !important;
+
+  font-size: 17px !important;
+
+  font-weight: 600 !important;
+
+  color: #7A3F4A !important;
 }
 
-.bloom-field input:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(197, 141, 50, 0.15);
+/* =========================
+   INPUT
+========================= */
+
+.bloom-card .bloom-field input {
+  display: block !important;
+
+  width: 100% !important;
+
+  height: 48px !important;
+
+  padding: 0 15px !important;
+
+  background: #FFF9F6 !important;
+
+  border: 1px solid #D98F9D !important;
+
+  border-radius: 12px !important;
+
+  outline: none !important;
+
+  color: #4A3035 !important;
+
+  font-family: 'Inter', sans-serif !important;
+
+  font-size: 15px !important;
 }
 
-.bloom-error {
-  color: #e28b8b;
-  font-size: 13px;
-  margin: 4px 2px 0;
-  min-height: 16px;
+/* PLACEHOLDER */
+
+.bloom-card .bloom-field input::placeholder {
+  color: #765C62 !important;
+
+  opacity: 0.6 !important;
 }
 
-.bloom-submit {
-  width: 100%;
-  margin-top: 24px;
-  padding: 15px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--gold), var(--rose));
-  color: #1a0f0f;
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* FOCUS */
+
+.bloom-card .bloom-field input:focus {
+  background: #FFFFFF !important;
+
+  border-color: #C97888 !important;
+
+  box-shadow:
+    0 0 0 3px rgba(201,120,136,0.15) !important;
 }
 
-.bloom-submit:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px -10px rgba(197, 141, 50, 0.5);
+/* =========================
+   ERROR
+========================= */
+
+.bloom-card .bloom-error {
+  color: #914F5C !important;
+
+  font-size: 13px !important;
 }
 
-/* Footer */
+/* =========================
+   LOGIN BUTTON
+========================= */
+
+.bloom-card button.bloom-submit {
+  display: block !important;
+
+  width: 100% !important;
+
+  margin-top: 24px !important;
+
+  padding: 15px !important;
+
+  border: none !important;
+
+  border-radius: 14px !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7A3F4A,
+      #C97888
+    ) !important;
+
+  color: #FFFFFF !important;
+
+  font-family: 'Cormorant Garamond', serif !important;
+
+  font-size: 19px !important;
+
+  font-weight: 600 !important;
+
+  letter-spacing: 0.1em !important;
+
+  cursor: pointer !important;
+}
+
+.bloom-card button.bloom-submit:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #914F5C,
+      #D98F9D
+    ) !important;
+
+  transform: translateY(-2px) !important;
+}
+
+/* =========================
+   FOOTER
+========================= */
 
 .bloom-footer {
-  position: relative;
-  z-index: 2;
-  padding: 0 24px 28px;
-  text-align: center;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--cream);
-  opacity: 0.35;
-  text-transform: uppercase;
+  position: relative !important;
+
+  z-index: 10 !important;
+
+  color: #765C62 !important;
 }
 
+/* =========================
+   SELECTION
+========================= */
+
+::selection {
+  background: #F3D7DC !important;
+
+  color: #7A3F4A !important;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
 @media (max-width: 480px) {
+
   .bloom-card {
-    padding: 32px 24px;
+    padding: 32px 24px !important;
   }
+
   .bloom-links {
-    gap: 28px;
+    gap: 28px !important;
   }
+
   .bloom-link {
-    font-size: 18px;
+    font-size: 18px !important;
   }
 }

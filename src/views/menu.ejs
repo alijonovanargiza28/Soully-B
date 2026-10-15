@@ -35,6 +35,8 @@
       </h1>
 
 
+      <% if (typeof saved !== "undefined" && saved) { %><p role="status">Product saved successfully.</p><% } %>
+
       <!-- PRODUCT TABLE -->
 
       <div class="bloom-table-wrap">
@@ -51,6 +53,7 @@
               <th>Price</th>
               <th>Left Count</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
 
           </thead>
@@ -109,7 +112,7 @@
                 <td>
 
                   <select
-                    class="bloom-select <%= 
+                    class="bloom-select <%=
                       p.productStatus === 'PROCESS'
                         ? 'active'
                         : ''
@@ -124,7 +127,7 @@
 
                     <option
                       value="PAUSE"
-                      <%= 
+                      <%=
                         p.productStatus === 'PAUSE'
                           ? 'selected'
                           : ''
@@ -136,7 +139,7 @@
 
                     <option
                       value="PROCESS"
-                      <%= 
+                      <%=
                         p.productStatus === 'PROCESS'
                           ? 'selected'
                           : ''
@@ -148,7 +151,7 @@
 
                     <option
                       value="DELETE"
-                      <%= 
+                      <%=
                         p.productStatus === 'DELETE'
                           ? 'selected'
                           : ''
@@ -161,6 +164,7 @@
 
                 </td>
 
+                <td><button type="button" class="bloom-btn-ghost edit-product" data-product="<%= JSON.stringify(p) %>">Edit</button></td>
               </tr>
 
             <% }) %>
@@ -244,7 +248,7 @@
 
           <div class="bloom-field">
 
-            <label>
+            <label for="productName">
               Product Name *
             </label>
 
@@ -253,6 +257,7 @@
               type="text"
               name="productName"
               id="productName"
+              minlength="2" maxlength="100"
               placeholder="Rose Bouquet"
               required
             />
@@ -262,7 +267,7 @@
 
           <div class="bloom-field">
 
-            <label>
+            <label for="productCollection">
               Collection *
             </label>
 
@@ -273,48 +278,10 @@
               required
             >
 
-              <option
-                value=""
-                selected
-                disabled
-              >
-                Select Collection
-              </option>
-
-
-              <option value="SINGLE_FLOWER">
-                Single Flower
-              </option>
-
-
-              <option value="BOUQUET">
-                Bouquet
-              </option>
-
-
-              <option value="DRIED_FLOWER">
-                Dried Flower
-              </option>
-
-
-              <option value="GRADUATION">
-                Graduation
-              </option>
-
-
-              <option value="WEDDING">
-                Wedding
-              </option>
-
-
-              <option value="LUXURY_BOUQUET">
-                Luxury Bouquet
-              </option>
-
-
-              <option value="OTHER">
-                Other
-              </option>
+              <option value="" selected disabled>Select Collection</option>
+              <% collections.forEach(function(collection) { %>
+                <option value="<%= collection %>"><%= collection.replace(/_/g, ' ') %></option>
+              <% }) %>
 
             </select>
 
@@ -331,7 +298,7 @@
 
           <div class="bloom-field">
 
-            <label>
+            <label for="productPrice">
               Price *
             </label>
 
@@ -340,6 +307,7 @@
               type="number"
               name="productPrice"
               id="productPrice"
+              min="0" step="0.01"
               required
             />
 
@@ -348,7 +316,7 @@
 
           <div class="bloom-field">
 
-            <label>
+            <label for="productLeftCount">
               Left Count *
             </label>
 
@@ -357,6 +325,7 @@
               type="number"
               name="productLeftCount"
               id="productLeftCount"
+              min="0" step="1"
               required
             />
 
@@ -373,7 +342,7 @@
 
           <div class="bloom-field">
 
-            <label>
+            <label for="productSize">
               Size
             </label>
 
@@ -384,10 +353,10 @@
             >
 
               <option
-                value="NORMAL"
+                value="MEDIUM"
                 selected
               >
-                Normal
+                MEDIUM
               </option>
 
 
@@ -407,7 +376,7 @@
 
           <div class="bloom-field">
 
-            <label>
+            <label for="productStatus">
               Status
             </label>
 
@@ -448,14 +417,14 @@
           class="bloom-field bloom-field--full"
         >
 
-          <label>
+          <label for="productDesc">
             Description
           </label>
 
 
           <textarea
             name="productDesc"
-            id="productDesc"
+            id="productDesc" maxlength="2000"
             rows="4"
           ></textarea>
 
@@ -467,7 +436,7 @@
 
         <div class="bloom-upload">
 
-          <label>
+          <label for="productImages">
             Product Images
           </label>
 
@@ -546,110 +515,6 @@
     </div>
 
   </div>
-
-
-
-  <!-- =========================
-       STATUS UPDATE
-  ========================== -->
-
-  <script>
-
-    async function updateProductStatus(
-      productId,
-      select
-    ) {
-
-      const status = select.value;
-
-
-      console.log(
-        "Product ID:",
-        productId
-      );
-
-
-      console.log(
-        "New Status:",
-        status
-      );
-
-
-      try {
-
-        const response =
-          await fetch(
-            `/admin/product/${productId}`,
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body: JSON.stringify({
-                productStatus: status
-              })
-            }
-          );
-
-
-        const data =
-          await response.json();
-
-
-        console.log(
-          "UPDATE RESULT:",
-          data
-        );
-
-
-        if (!response.ok) {
-
-          throw new Error(
-            data.message ||
-            "Status update failed"
-          );
-
-        }
-
-
-        /*
-         * PROCESS bo'lsa active
-         */
-
-        select.classList.remove(
-          "active"
-        );
-
-
-        if (status === "PROCESS") {
-
-          select.classList.add(
-            "active"
-          );
-
-        }
-
-
-        console.log(
-          "Status successfully updated!"
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "STATUS UPDATE ERROR:",
-          error
-        );
-
-      }
-
-    }
-
-  </script>
 
 
 

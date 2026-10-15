@@ -85,10 +85,10 @@
 
                   <td style="width: 13%">
 
-                    <select
-                      class="spec-select member-status"
-                      data-id="<%= u._id %>"
-                    >
+                   <select
+  class="spec-select member-status status-<%= (u.memberStatus || 'ACTIVE').toLowerCase() %>"
+  data-id="<%= u._id %>"
+>
 
                       <option
                         value="ACTIVE"
@@ -158,7 +158,8 @@
 
   <!-- USERS JS -->
 
-  <script src="/js/users.js"></script>
+
+<script src="/js/users.js"></script>
 
 </body>
 

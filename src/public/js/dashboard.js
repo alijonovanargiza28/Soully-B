@@ -1,8 +1,3 @@
-// document.getElementById('logoutLink').addEventListener('click', (e) => {
-//    e.preventDefault();
-//   window.location.href = '/admin/login';
-//  });
-
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 function buildPetalRing(

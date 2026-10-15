@@ -1,15 +1,19 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import "dotenv/config";
 import mongoose from "mongoose";
 import app from "./app";
-mongoose
-.connect(process.env.MONGO_URL as string,{})
-.then(data =>{
-    console.log("Mongodb connection succeed");
-    const PORT = process.env.PORT ?? 3003;
-    app.listen(PORT, function(){
-        console.info(`the server is running seccessfully on Port: ${PORT}`)
-        console.info(`Admin project on http://localhost:${PORT}/admin \n`)
-    })
-})
-.catch(err => console.log('ERROR on connection Mongodb',err));
+
+async function start(): Promise<void> {
+  const port = Number(process.env.PORT || 3003);
+  try {
+    for (const key of ["MONGO_URL", "SESSION_SECRET", "SECRET_TOKEN"]) {
+      if (!process.env[key]) throw new Error(`${key} is required. See .env.example.`);
+    }
+    await mongoose.connect(process.env.MONGO_URL as string);
+    app.listen(port, () => console.info(`Soully API: http://localhost:${port} | Admin: /admin`));
+  } catch (error) {
+    console.error("Soully startup failed", error);
+    process.exitCode = 1;
+    await mongoose.disconnect();
+  }
+}
+void start();
