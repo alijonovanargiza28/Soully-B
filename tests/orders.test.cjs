@@ -6,7 +6,6 @@ const OrderService = require("../src/models/Order.service").default;
 const OrderModel = require("../src/schema/Order.model").default;
 const ProductModel = require("../src/schema/Product.model").default;
 const OrderItemModel = require("../src/schema/OrderItem.model").default;
-const MemberService = require("../src/models/Member.service").default;
 const { shapeIntoMongooseObjectId } = require("../src/libs/config");
 const member = { _id: new mongoose.Types.ObjectId() };
 
@@ -35,21 +34,23 @@ test("order totals use catalog prices rather than submitted prices", async (t) =
   assert.equal(recorded[0].itemPrice, 20);
 });
 
-test("updates match owner and previous state and cannot award points twice", async (t) => {
+test("finishing an order matches its owner and previous state and cannot repeat", async (t) => {
   let filter;
-  let points = 0;
+  let finished = false;
   t.mock.method(OrderModel, "findOneAndUpdate", (query) => {
     filter = query;
-    return { exec: async () => (points ? null : { orderStatus: "PROCESS" }) };
-  });
-  t.mock.method(MemberService.prototype, "addUserPoint", async () => {
-    points++;
+    return {
+      exec: async () => {
+        if (finished) return null;
+        finished = true;
+        return { orderStatus: "FINISH" };
+      },
+    };
   });
   const service = new OrderService();
-  const input = { orderId: String(new mongoose.Types.ObjectId()), orderStatus: "PROCESS" };
+  const input = { orderId: String(new mongoose.Types.ObjectId()), orderStatus: "FINISH" };
   await service.updateOrder(member, input);
   assert.equal(String(filter.memberId), String(member._id));
-  assert.equal(filter.orderStatus, "PAUSE");
+  assert.equal(filter.orderStatus, "PROCESS");
   await assert.rejects(service.updateOrder(member, input), { code: 400 });
-  assert.equal(points, 1);
 });

@@ -1,3 +1,4 @@
+import { cookieOptions } from "../libs/deployment";
 import { NextFunction, Request, Response } from "express";
 import { MemberType } from "../libs/enums/member.enum";
 import Errors, { HttpCode, Message } from "../libs/Errors";
@@ -118,7 +119,7 @@ const sellerController = {
         return res.redirect("/admin/login");
       }
 
-      res.clearCookie("connect.sid");
+      res.clearCookie("connect.sid", cookieOptions());
 
       return res.redirect("/admin/login");
     });

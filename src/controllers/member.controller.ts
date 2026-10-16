@@ -1,3 +1,4 @@
+import { cookieOptions } from "../libs/deployment";
 import { NextFunction, Request, Response } from "express";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { AUTH_TIMER } from "../libs/config";
@@ -34,9 +35,7 @@ const memberController = {
 
       res.cookie("accessToken", token, {
         maxAge: AUTH_TIMER * 3600 * 1000,
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        ...cookieOptions(),
       });
 
       res.status(HttpCode.CREATED).json({
@@ -61,9 +60,7 @@ const memberController = {
 
       res.cookie("accessToken", token, {
         maxAge: AUTH_TIMER * 3600 * 1000,
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        ...cookieOptions(),
       });
 
       res.status(HttpCode.OK).json({ member: result, accessToken: token });
@@ -75,7 +72,7 @@ const memberController = {
   },
   logout: (req: ExtendedRequest, res: Response) => {
     try {
-      res.clearCookie("accessToken");
+      res.clearCookie("accessToken", cookieOptions());
 
       return res.status(HttpCode.OK).json({ message: "Logged out" });
     } catch (err) {

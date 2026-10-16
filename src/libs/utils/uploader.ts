@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
+import { uploadRoot } from "../deployment";
 
 const imageTypes: Record<string, string> = {
   ".jpg": "image/jpeg",
@@ -10,10 +11,7 @@ const imageTypes: Record<string, string> = {
 };
 
 const makeUploader = (directory: "members" | "products") => {
-  const destination = path.resolve(
-    process.env.UPLOAD_ROOT || path.resolve(__dirname, "../../../uploads"),
-    directory,
-  );
+  const destination = path.resolve(uploadRoot(), directory);
   fs.mkdirSync(destination, { recursive: true });
   return multer({
     storage: multer.diskStorage({

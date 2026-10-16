@@ -3,7 +3,7 @@ const { test, before, after } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { MongoMemoryServer } = require("mongodb-memory-server");
+const { MongoMemoryReplSet } = require("mongodb-memory-server");
 const mongoose = require("mongoose");
 const request = require("supertest");
 const { ProductCollection } = require("../../src/libs/enums/product.enum");
@@ -24,9 +24,10 @@ before(
   async () => {
     const dbPath = path.join(temp, "db");
     fs.mkdirSync(dbPath);
-    mongo = await MongoMemoryServer.create({
+    mongo = await MongoMemoryReplSet.create({
       binary: { version: "7.0.14", downloadDir: "/private/tmp/soully-mongodb-binaries" },
-      instance: { dbPath, dbName: "soully_audit", ip: "127.0.0.1" },
+      replSet: { count: 1, dbName: "soully_audit", ip: "127.0.0.1", storageEngine: "wiredTiger" },
+      instanceOpts: [{ dbPath }],
     });
     process.env.MONGO_URL = mongo.getUri();
     process.env.SESSION_SECRET = "isolated-test-session-secret";
@@ -341,6 +342,11 @@ test("real MongoDB + Express feature integration", { timeout: 180000 }, async (t
       ]);
       assert.deepEqual(attempts.map((r) => r.status).sort(), [200, 400]);
       assert.equal((await first.get("/member/detail")).body.memberPoints, 1);
+      const Product = require("../../src/schema/Product.model").default;
+      assert.equal(
+        (await Product.findById(product._id)).productLeftCount,
+        product.productLeftCount - 2,
+      );
       const own = await first.get("/order/all?orderStatus=PROCESS");
       assert.equal(own.status, 200);
       assert.equal(own.body.result.length, 1);
@@ -359,6 +365,79 @@ test("real MongoDB + Express feature integration", { timeout: 180000 }, async (t
         ).status,
         400,
       );
+    },
+  );
+  await t.test(
+    "stock confirmation is atomic, never oversells, and rolls back multi-product failures",
+    async () => {
+      const Product = require("../../src/schema/Product.model").default;
+      const Order = require("../../src/schema/Order.model").default;
+      const Member = require("../../src/schema/Member.module").default;
+      async function flower(name, count) {
+        return Product.create({
+          productName: name,
+          productCollection: "BOUQUET",
+          productStatus: "PROCESS",
+          productPrice: 10,
+          productLeftCount: count,
+        });
+      }
+      async function pending(agent, items) {
+        const response = await agent.post("/order/create").send(
+          items.map(([product, quantity]) => ({
+            productId: String(product._id),
+            itemQuantity: quantity,
+            itemPrice: 0,
+          })),
+        );
+        assert.equal(response.status, 201, response.text);
+        return response.body.result._id;
+      }
+      const last = await flower("Last unit inventory regression", 1);
+      const cancelled = await pending(first, [[last, 1]]);
+      assert.equal(
+        (await first.post("/order/update").send({ orderId: cancelled, orderStatus: "DELETE" }))
+          .status,
+        200,
+      );
+      assert.equal((await Product.findById(last._id)).productLeftCount, 1);
+      const a = await pending(first, [[last, 1]]);
+      const b = await pending(second, [[last, 1]]);
+      const attempts = await Promise.all([
+        first.post("/order/update").send({ orderId: a, orderStatus: "PROCESS" }),
+        second.post("/order/update").send({ orderId: b, orderStatus: "PROCESS" }),
+      ]);
+      assert.deepEqual(attempts.map((r) => r.status).sort(), [200, 409]);
+      assert.equal((await Product.findById(last._id)).productLeftCount, 0);
+      assert.equal(await Order.countDocuments({ _id: { $in: [a, b] }, orderStatus: "PROCESS" }), 1);
+      const index = attempts.findIndex((r) => r.status === 200);
+      const agent = index === 0 ? first : second;
+      const won = index === 0 ? a : b;
+      assert.equal(
+        (await agent.post("/order/update").send({ orderId: won, orderStatus: "PROCESS" })).status,
+        400,
+      );
+      assert.equal(
+        (await agent.post("/order/update").send({ orderId: won, orderStatus: "FINISH" })).status,
+        200,
+      );
+      assert.equal((await Product.findById(last._id)).productLeftCount, 0);
+      const x = await flower("Rollback stock A", 3);
+      const y = await flower("Rollback stock B", 2);
+      const order = await pending(first, [
+        [x, 2],
+        [y, 2],
+      ]);
+      await Product.updateOne({ _id: y._id }, { $set: { productLeftCount: 1 } });
+      const member = await Member.findOne({ memberNick: "AuditUserOne" });
+      const response = await first
+        .post("/order/update")
+        .send({ orderId: order, orderStatus: "PROCESS" });
+      assert.equal(response.status, 409, response.text);
+      assert.equal((await Product.findById(x._id)).productLeftCount, 3);
+      assert.equal((await Product.findById(y._id)).productLeftCount, 1);
+      assert.equal((await Order.findById(order)).orderStatus, "PAUSE");
+      assert.equal((await Member.findById(member._id)).memberPoints, member.memberPoints);
     },
   );
   await t.test(

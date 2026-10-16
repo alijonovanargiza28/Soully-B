@@ -1,5 +1,7 @@
 import { shapeIntoMongooseObjectId } from "../libs/config";
 import { OrderStatus } from "../libs/enums/order.enum";
+import { MemberStatus, MemberType } from "../libs/enums/member.enum";
+import MemberModel from "../schema/Member.module";
 import { ProductStatus } from "../libs/enums/product.enum";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { Member } from "../libs/types/member";
@@ -7,12 +9,10 @@ import { Order, OrderInquiry, OrderItemInput, OrderUpdateInput } from "../libs/t
 import OrderModel from "../schema/Order.model";
 import OrderItemModel from "../schema/OrderItem.model";
 import ProductModel from "../schema/Product.model";
-import MemberService from "./Member.service";
 
 class OrderService {
   private readonly orderModel = OrderModel;
   private readonly orderItemModel = OrderItemModel;
-  private readonly memberService = new MemberService();
 
   public async createOrder(member: Member, input: OrderItemInput[]): Promise<Order> {
     if (!Array.isArray(input) || input.length === 0 || input.length > 100) {
@@ -126,20 +126,74 @@ class OrderService {
     ) {
       throw new Errors(HttpCode.BAD_REQUEST, Message.UPDATE_FAILED);
     }
-    // Match ownership and previous state atomically to prevent repeated transitions.
+    const filter = {
+      _id: shapeIntoMongooseObjectId(input.orderId),
+      memberId: shapeIntoMongooseObjectId(member._id),
+      orderStatus: previousStatus,
+    };
+    if (input.orderStatus === OrderStatus.PROCESS) {
+      // Confirm the order, decrement every line and award points in one transaction.
+      // Concurrent confirmations retry against current stock; partial changes roll back.
+      return this.orderModel.db.transaction(async (session) => {
+        const result = await this.orderModel
+          .findOneAndUpdate(
+            filter,
+            { $set: { orderStatus: OrderStatus.PROCESS } },
+            { new: true, runValidators: true, session },
+          )
+          .exec();
+        if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.UPDATE_FAILED);
+        const items = await this.orderItemModel
+          .find({ orderId: result._id })
+          .session(session)
+          .lean()
+          .exec();
+        if (!items.length) throw new Errors(HttpCode.BAD_REQUEST, "This order has no products.");
+        const quantities = new Map<string, number>();
+        for (const item of items) {
+          const id = String(shapeIntoMongooseObjectId(item.productId));
+          const total = (quantities.get(id) || 0) + item.itemQuantity;
+          if (
+            !Number.isSafeInteger(item.itemQuantity) ||
+            item.itemQuantity < 1 ||
+            !Number.isSafeInteger(total)
+          )
+            throw new Errors(HttpCode.BAD_REQUEST, "Invalid order quantity.");
+          quantities.set(id, total);
+        }
+        for (const [productId, quantity] of quantities) {
+          const stock = await ProductModel.updateOne(
+            {
+              _id: shapeIntoMongooseObjectId(productId),
+              productStatus: ProductStatus.PROCESS,
+              productLeftCount: { $gte: quantity },
+            },
+            { $inc: { productLeftCount: -quantity } },
+            { session },
+          ).exec();
+          if (stock.modifiedCount !== 1)
+            throw new Errors(
+              HttpCode.CONFLICT,
+              "Some flowers are no longer available in the requested quantity. Please refresh your order.",
+            );
+        }
+        await MemberModel.updateOne(
+          { _id: filter.memberId, memberType: MemberType.USER, memberStatus: MemberStatus.ACTIVE },
+          { $inc: { memberPoints: 1 } },
+          { session },
+        ).exec();
+        return result as unknown as Order;
+      });
+    }
+    // Cancelling a pending order or finishing a confirmed one never changes stock.
     const result = await this.orderModel
       .findOneAndUpdate(
-        {
-          _id: shapeIntoMongooseObjectId(input.orderId),
-          memberId: shapeIntoMongooseObjectId(member._id),
-          orderStatus: previousStatus,
-        },
+        filter,
         { $set: { orderStatus: input.orderStatus } },
         { new: true, runValidators: true },
       )
       .exec();
     if (!result) throw new Errors(HttpCode.BAD_REQUEST, Message.UPDATE_FAILED);
-    if (input.orderStatus === OrderStatus.PROCESS) await this.memberService.addUserPoint(member, 1);
     return result as unknown as Order;
   }
 }

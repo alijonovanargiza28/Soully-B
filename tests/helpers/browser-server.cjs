@@ -1,7 +1,7 @@
 require("ts-node/register");
 const fs = require("node:fs");
 const path = require("node:path");
-const { MongoMemoryServer } = require("mongodb-memory-server");
+const { MongoMemoryReplSet } = require("mongodb-memory-server");
 const mongoose = require("mongoose");
 const express = require("express");
 const { ProductCollection } = require("../../src/libs/enums/product.enum");
@@ -9,13 +9,15 @@ const { ProductCollection } = require("../../src/libs/enums/product.enum");
 (async () => {
   const directory = fs.mkdtempSync("/private/tmp/soully-browser-audit-");
   fs.mkdirSync(path.join(directory, "db"));
-  const mongo = await MongoMemoryServer.create({
+  const mongo = await MongoMemoryReplSet.create({
     binary: { version: "7.0.14", downloadDir: "/private/tmp/soully-mongodb-binaries" },
-    instance: {
-      dbPath: path.join(directory, "db"),
+    replSet: {
+      count: 1,
       dbName: "soully_browser_audit",
       ip: "127.0.0.1",
+      storageEngine: "wiredTiger",
     },
+    instanceOpts: [{ dbPath: path.join(directory, "db") }],
   });
   Object.assign(process.env, {
     MONGO_URL: mongo.getUri(),

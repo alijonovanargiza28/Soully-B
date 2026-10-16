@@ -6,9 +6,18 @@ import session from "express-session";
 import morgan from "morgan";
 import multer from "multer";
 import path from "path";
+import mongoose from "mongoose";
+import {
+  allowedOrigins,
+  cookieOptions,
+  uploadRoot,
+  validateProductionEnvironment,
+} from "./libs/deployment";
 import { MORGAN_FORMAT } from "./libs/config";
 import router from "./router";
 import routerAdmin from "./routerAdmin";
+
+validateProductionEnvironment();
 
 const MongoDBStore = ConnectMongoDB(session);
 export const store = new MongoDBStore({
@@ -21,23 +30,18 @@ const app = express();
 if (process.env.TRUST_PROXY === "1") app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(express.static(path.join(__dirname, "public")));
-app.use(
-  "/uploads",
-  express.static(process.env.UPLOAD_ROOT || path.resolve(__dirname, "../uploads")),
-);
+app.use("/uploads", express.static(uploadRoot()));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan(MORGAN_FORMAT));
-const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:3000,http://127.0.0.1:3000")
-  .split(",")
-  .map((origin) => origin.trim());
-app.use(cors({ credentials: true, origin: allowedOrigins }));
+const origins = allowedOrigins();
+app.use(cors({ credentials: true, origin: origins }));
 app.use((req, res, next) => {
   const origin = req.get("origin");
   if (
     !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
     origin &&
-    !allowedOrigins.includes(origin) &&
+    !origins.includes(origin) &&
     origin !== `${req.protocol}://${req.get("host")}`
   ) {
     res.status(403).json({ message: "This request origin is not allowed." });
@@ -58,7 +62,7 @@ app.use(
 
     cookie: {
       maxAge: 1000 * 3600 * 3,
-      httpOnly: true,
+      ...cookieOptions(),
     },
   }),
 );
@@ -73,6 +77,10 @@ app.set("view engine", "ejs");
 
 /** 4- Routers*/
 //BSSR: EJS
+app.get("/health", (_req, res) => {
+  const connected = mongoose.connection.readyState === 1;
+  res.status(connected ? 200 : 503).json({ status: connected ? "ok" : "unavailable" });
+});
 app.use("/admin", routerAdmin); //BSSR: EJS
 app.use("/", router); // SPA: REACT
 
