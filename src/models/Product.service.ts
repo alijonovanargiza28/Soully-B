@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { PipelineStage, Types } from "mongoose";
 import { shapeIntoMongooseObjectId } from "../libs/config";
 import { ProductCollection, ProductStatus } from "../libs/enums/product.enum";
 import { ViewGroup } from "../libs/enums/view.enum";
@@ -7,6 +7,9 @@ import { Product, ProductInput, ProductInquery, ProductUpdateInput } from "../li
 import { ViewInput } from "../libs/types/view";
 import { validateProductInput } from "../libs/validation/product";
 import ProductModel from "../schema/Product.model";
+import OrderModel from "../schema/Order.model";
+import OrderItemModel from "../schema/OrderItem.model";
+import { OrderStatus } from "../libs/enums/order.enum";
 import ViewService from "./view.service";
 type ObjectId = Types.ObjectId;
 
@@ -32,7 +35,9 @@ class ProductService {
         "Page and limit must be positive integers; limit cannot exceed 100.",
       );
     }
-    const order = ["createdAt", "productPrice", "productViews"].includes(inquiry.order)
+    const order = ["createdAt", "productPrice", "productViews", "productSold"].includes(
+      inquiry.order,
+    )
       ? inquiry.order
       : "createdAt";
     const match: Record<string, unknown> = { productStatus: ProductStatus.PROCESS };
@@ -50,9 +55,49 @@ class ProductService {
       match.productName = {
         $regex: new RegExp(inquiry.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"),
       };
+    // Derive sales from existing order lines; status transitions never increment a cached counter.
+    const salesStages: PipelineStage[] =
+      order === "productSold"
+        ? [
+            {
+              $lookup: {
+                from: OrderItemModel.collection.name,
+                let: { productId: "$_id" },
+                pipeline: [
+                  { $match: { $expr: { $eq: ["$productId", "$$productId"] } } },
+                  {
+                    $lookup: {
+                      from: OrderModel.collection.name,
+                      let: { orderId: "$orderId" },
+                      pipeline: [
+                        {
+                          $match: {
+                            $expr: { $eq: ["$_id", "$$orderId"] },
+                            orderStatus: { $in: [OrderStatus.PROCESS, OrderStatus.FINISH] },
+                          },
+                        },
+                        { $project: { _id: 1 } },
+                      ],
+                      as: "confirmedOrder",
+                    },
+                  },
+                  { $match: { "confirmedOrder.0": { $exists: true } } },
+                  { $group: { _id: null, total: { $sum: "$itemQuantity" } } },
+                ],
+                as: "sales",
+              },
+            },
+            {
+              $addFields: { productSold: { $ifNull: [{ $arrayElemAt: ["$sales.total", 0] }, 0] } },
+            },
+            { $match: { productSold: { $gt: 0 } } },
+            { $project: { sales: 0 } },
+          ]
+        : [];
     const result = await this.productModel
       .aggregate([
         { $match: match },
+        ...salesStages,
         {
           $facet: {
             products: [

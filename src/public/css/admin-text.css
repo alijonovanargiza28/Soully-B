@@ -1,0 +1,43 @@
+/* White and blush text on the admin's rose surfaces. */
+.bloom-nav .bloom-mark,
+.bloom-nav .bloom-link,
+.bloom-nav .bloom-links a,
+.bloom-nav .bloom-link.is-active {
+  color: #65213e !important;
+  opacity: 1;
+  text-shadow: none;
+}
+.bloom-stage > .bloom-title {
+  color: #65213e !important;
+  text-shadow: none;
+}
+.bloom-page .bloom-card {
+  background: linear-gradient(145deg, #8f3157, #a5446c) !important;
+  border-color: #e9bdcc !important;
+}
+.bloom-page .bloom-card .bloom-title,
+.bloom-page .bloom-card .bloom-field label,
+.bloom-page .bloom-card .bloom-subtext a {
+  color: #fff4f8 !important;
+}
+.bloom-page .bloom-card .bloom-subtext,
+.bloom-page .bloom-card .bloom-hint {
+  color: #fbe0eb !important;
+}
+.bloom-page .bloom-card input,
+.bloom-page .bloom-card textarea,
+.bloom-page .bloom-card select {
+  color: #722744 !important;
+  background-color: #fff8fb !important;
+}
+.bloom-page .bloom-card .bloom-error {
+  color: #fff4f8 !important;
+}
+.bloom-table-wrap thead th {
+  background: #8f3157;
+  color: #fff4f8 !important;
+}
+.bloom-submit,
+.bloom-logout-btn {
+  color: #fff4f8 !important;
+}

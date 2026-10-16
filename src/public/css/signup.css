@@ -5,26 +5,26 @@
    ========================================================= */
 
 :root {
-  --bg-main: #FBECEF;
-  --bg-light: #FFF7F8;
-  --bg-soft: #F3D7DC;
+  --bg-main: #f3d5df;
+  --bg-light: #fff4f7;
+  --bg-soft: #e9bdcc;
 
-  --pink-deep: #7A3F4A;
-  --pink-dark: #914F5C;
+  --pink-deep: #722744;
+  --pink-dark: #8f3157;
 
-  --rose: #C97888;
-  --rose-soft: #D98F9D;
+  --rose: #aa3f6a;
+  --rose-soft: #bf6588;
 
-  --pink-light: #F3D7DC;
-  --pink-pale: #FBECEF;
+  --pink-light: #e9bdcc;
+  --pink-pale: #f3d5df;
 
   --cream: #FFF9F6;
   --white: #FFFFFF;
 
   --gold: #B99372;
 
-  --text: #4A3035;
-  --text-soft: #765C62;
+  --text: #482333;
+  --text-soft: #704153;
 }
 
 /* =========================================================
@@ -66,9 +66,9 @@ body {
   background:
     linear-gradient(
       135deg,
-      #FFF7F8 0%,
-      #FBECEF 50%,
-      #F3D7DC 100%
+      #fff4f7 0%,
+      #f3d5df 50%,
+      #e9bdcc 100%
     );
 
   color: var(--text);
@@ -112,9 +112,9 @@ body {
 
     linear-gradient(
       135deg,
-      #FFF7F8 0%,
-      #FBECEF 50%,
-      #F3D7DC 100%
+      #fff4f7 0%,
+      #f3d5df 50%,
+      #e9bdcc 100%
     );
 }
 

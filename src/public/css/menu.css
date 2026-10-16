@@ -1,20 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500&display=swap');
 
 :root {
-  --pink-deep: #7A3F4A;
-  --pink-dark: #8F4F5B;
-  --pink: #C97888;
-  --pink-soft: #D98F9D;
-  --pink-light: #F3D7DC;
-  --pink-pale: #FBECEF;
+  --pink-deep: #722744;
+  --pink-dark: #8f3157;
+  --pink: #aa3f6a;
+  --pink-soft: #bf6588;
+  --pink-light: #e9bdcc;
+  --pink-pale: #f3d5df;
 
   --gold: #C9A27E;
 
   --cream: #FFF8F5;
   --white: #FFFFFF;
 
-  --text: #4A3035;
-  --text-soft: #765C62;
+  --text: #482333;
+  --text-soft: #704153;
 }
 
 * {
@@ -25,10 +25,10 @@
   position: relative;
   min-height: 100vh;
 
-  background: #F8DDE5;
+  background: #ebbdce;
 
   font-family: 'Inter', sans-serif;
-  color: #4A3035;
+  color: #482333;
 }
 
 .bloom-wash {
@@ -38,7 +38,7 @@
   width: 100%;
   min-height: 100vh;
 
-  background: #F8DDE5;
+  background: #ebbdce;
 }
 /* ================= NAV ================= */
 
@@ -222,8 +222,8 @@ tbody td {
 
 .bloom-select.active {
   border-color: #A76D78;
-  color: #7A3F4A;
-  background: #F3D7DC;
+  color: #722744;
+  background: #e9bdcc;
 }
 
 /* ================= ACTIONS ================= */
@@ -386,7 +386,7 @@ tbody td {
     linear-gradient(
       145deg,
       #FFF8F5,
-      #FBECEF
+      #f3d5df
     );
 
   border:
@@ -768,7 +768,7 @@ tbody td {
 
   border: 1px solid #B99372 !important;
 
-  color: #765C62 !important;
+  color: #704153 !important;
 
   border-radius: 22px !important;
 }
@@ -778,7 +778,7 @@ tbody td {
 
   border-color: #B99372 !important;
 
-  color: #765C62 !important;
+  color: #704153 !important;
 }
 
 /* =========================================================
@@ -786,21 +786,21 @@ tbody td {
    ========================================================= */
 
 .bloom-select.status-process {
-  background: #F3D7DC !important;
+  background: #e9bdcc !important;
 
-  border: 1px solid #C97888 !important;
+  border: 1px solid #aa3f6a !important;
 
-  color: #7A3F4A !important;
+  color: #722744 !important;
 
   border-radius: 22px !important;
 }
 
 .bloom-select.status-process:hover {
-  background: #E8C1C9 !important;
+  background: #dda0b5 !important;
 
-  border-color: #914F5C !important;
+  border-color: #8f3157 !important;
 
-  color: #7A3F4A !important;
+  color: #722744 !important;
 }
 
 /* =========================================================
@@ -808,21 +808,21 @@ tbody td {
    ========================================================= */
 
 .bloom-select.status-delete {
-  background: #EBCFD5 !important;
+  background: #e5b1c3 !important;
 
-  border: 1px solid #914F5C !important;
+  border: 1px solid #8f3157 !important;
 
-  color: #7A3F4A !important;
+  color: #722744 !important;
 
   border-radius: 22px !important;
 }
 
 .bloom-select.status-delete:hover {
-  background: #DFC0C7 !important;
+  background: #d696ac !important;
 
-  border-color: #7A3F4A !important;
+  border-color: #722744 !important;
 
-  color: #7A3F4A !important;
+  color: #722744 !important;
 }
 
 /* =========================================================
@@ -853,17 +853,17 @@ tbody td {
 
   background: #FFF9F6;
 
-  color: #4A3035;
+  color: #482333;
 }
 
 .bloom-select option[value="PAUSE"] {
-  color: #765C62;
+  color: #704153;
 }
 
 .bloom-select option[value="PROCESS"] {
-  color: #7A3F4A;
+  color: #722744;
 }
 
 .bloom-select option[value="DELETE"] {
-  color: #7A3F4A;
+  color: #722744;
 }

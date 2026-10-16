@@ -362,6 +362,82 @@ test("real MongoDB + Express feature integration", { timeout: 180000 }, async (t
     },
   );
   await t.test(
+    "best sellers rank purchased quantities and exclude pending, cancelled, unsold and inactive products",
+    async () => {
+      const Product = require("../../src/schema/Product.model").default;
+      const Order = require("../../src/schema/Order.model").default;
+      const OrderItem = require("../../src/schema/OrderItem.model").default;
+      const Member = require("../../src/schema/Member.module").default;
+      const member = await Member.findOne({ memberNick: "AuditUserOne" });
+      const catalog = [];
+      for (let i = 0; i < 4; i++)
+        catalog.push(
+          await Product.create({
+            productName: `Sales regression ${i}`,
+            productCollection: "BOUQUET",
+            productStatus: i === 3 ? "PAUSE" : "PROCESS",
+            productPrice: 10,
+            productLeftCount: 100,
+            productViews: i === 2 ? 999999 : 0,
+          }),
+        );
+      async function line(product, quantity, status) {
+        const order = await Order.create({
+          memberId: member._id,
+          orderTotal: quantity * 10,
+          orderDelivery: 0,
+          orderStatus: status,
+        });
+        await OrderItem.create({
+          orderId: order._id,
+          productId: product._id,
+          itemQuantity: quantity,
+          itemPrice: 10,
+        });
+        return order;
+      }
+      const completed = await line(catalog[0], 200, "PROCESS");
+      await line(catalog[0], 300, "FINISH");
+      await line(catalog[1], 700, "FINISH");
+      await line(catalog[0], 9000, "PAUSE");
+      await line(catalog[0], 9000, "DELETE");
+      await line(catalog[3], 9000, "FINISH");
+      await OrderItem.create({
+        orderId: new mongoose.Types.ObjectId(),
+        productId: catalog[0]._id,
+        itemQuantity: 9000,
+        itemPrice: 10,
+      });
+      const response = await request(app).get("/product/all?order=productSold&limit=100");
+      assert.equal(response.status, 200);
+      assert.equal(response.body.result[0]._id, String(catalog[1]._id));
+      assert.equal(response.body.result[0].productSold, 700);
+      assert.equal(response.body.result[1]._id, String(catalog[0]._id));
+      assert.equal(response.body.result[1].productSold, 500);
+      assert.ok(
+        !response.body.result.some((p) =>
+          [String(catalog[2]._id), String(catalog[3]._id)].includes(p._id),
+        ),
+      );
+      const page = await request(app).get("/product/all?order=productSold&limit=1&page=2");
+      assert.equal(page.body.result[0]._id, String(catalog[0]._id));
+      assert.equal(page.body.pagination.total, response.body.pagination.total);
+      assert.equal(page.body.pagination.totalPages, response.body.pagination.total);
+      const filtered = await request(app).get(
+        "/product/all?order=productSold&search=Sales%20regression",
+      );
+      assert.equal(filtered.body.pagination.total, 2);
+      await Order.updateOne({ _id: completed._id }, { $set: { orderStatus: "FINISH" } });
+      const after = await request(app).get(
+        "/product/all?order=productSold&search=Sales%20regression",
+      );
+      assert.equal(
+        after.body.result.find((p) => p._id === String(catalog[0]._id)).productSold,
+        500,
+      );
+    },
+  );
+  await t.test(
     "blocked members lose token access; admin login/logout and stale sessions are enforced",
     async () => {
       const Member = require("../../src/schema/Member.module").default;

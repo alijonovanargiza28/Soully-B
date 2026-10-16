@@ -16,8 +16,8 @@ body {
 ========================= */
 
 body {
-  background: #FBECEF !important;
-  color: #4A3035 !important;
+  background: #f3d5df !important;
+  color: #482333 !important;
   font-family: 'Inter', sans-serif !important;
 }
 
@@ -35,12 +35,12 @@ body {
   background:
     linear-gradient(
       135deg,
-      #FFF7F8 0%,
-      #FBECEF 50%,
-      #F3D7DC 100%
+      #fff4f7 0%,
+      #f3d5df 50%,
+      #e9bdcc 100%
     ) !important;
 
-  color: #4A3035 !important;
+  color: #482333 !important;
 }
 
 /* =========================
@@ -66,9 +66,9 @@ body {
     ),
     linear-gradient(
       135deg,
-      #FFF7F8 0%,
-      #FBECEF 50%,
-      #F3D7DC 100%
+      #fff4f7 0%,
+      #f3d5df 50%,
+      #e9bdcc 100%
     ) !important;
 }
 
@@ -98,7 +98,7 @@ body {
 
   font-size: 42px !important;
 
-  color: #7A3F4A !important;
+  color: #722744 !important;
 
   opacity: 1 !important;
 }
@@ -119,7 +119,7 @@ body {
 
   font-size: 24px !important;
 
-  color: #914F5C !important;
+  color: #8f3157 !important;
 
   opacity: 1 !important;
 
@@ -130,7 +130,7 @@ body {
 .bloom-links a.is-active,
 .bloom-link:hover,
 .bloom-link.is-active {
-  color: #7A3F4A !important;
+  color: #722744 !important;
 
   opacity: 1 !important;
 }
@@ -174,7 +174,7 @@ body {
 
   background: #FFFFFF !important;
 
-  border: 2px solid #F3D7DC !important;
+  border: 2px solid #e9bdcc !important;
 
   border-radius: 24px !important;
 
@@ -194,7 +194,7 @@ body {
 
   font-size: 36px !important;
 
-  color: #7A3F4A !important;
+  color: #722744 !important;
 
   text-align: center !important;
 }
@@ -207,7 +207,7 @@ body {
 .bloom-subtext {
   margin: 0 0 30px !important;
 
-  color: #765C62 !important;
+  color: #704153 !important;
 
   opacity: 1 !important;
 
@@ -219,7 +219,7 @@ body {
 ========================= */
 
 .bloom-card p.bloom-subtext a {
-  color: #C97888 !important;
+  color: #aa3f6a !important;
 
   font-family: 'Cormorant Garamond', serif !important;
 
@@ -229,13 +229,13 @@ body {
 
   text-decoration: none !important;
 
-  border-bottom: 1px solid #C97888 !important;
+  border-bottom: 1px solid #aa3f6a !important;
 }
 
 .bloom-card p.bloom-subtext a:hover {
-  color: #7A3F4A !important;
+  color: #722744 !important;
 
-  border-color: #7A3F4A !important;
+  border-color: #722744 !important;
 }
 
 /* =========================
@@ -261,7 +261,7 @@ body {
 
   font-weight: 600 !important;
 
-  color: #7A3F4A !important;
+  color: #722744 !important;
 }
 
 /* =========================
@@ -279,13 +279,13 @@ body {
 
   background: #FFF9F6 !important;
 
-  border: 1px solid #D98F9D !important;
+  border: 1px solid #bf6588 !important;
 
   border-radius: 12px !important;
 
   outline: none !important;
 
-  color: #4A3035 !important;
+  color: #482333 !important;
 
   font-family: 'Inter', sans-serif !important;
 
@@ -295,7 +295,7 @@ body {
 /* PLACEHOLDER */
 
 .bloom-card .bloom-field input::placeholder {
-  color: #765C62 !important;
+  color: #704153 !important;
 
   opacity: 0.6 !important;
 }
@@ -305,7 +305,7 @@ body {
 .bloom-card .bloom-field input:focus {
   background: #FFFFFF !important;
 
-  border-color: #C97888 !important;
+  border-color: #aa3f6a !important;
 
   box-shadow:
     0 0 0 3px rgba(201,120,136,0.15) !important;
@@ -316,7 +316,7 @@ body {
 ========================= */
 
 .bloom-card .bloom-error {
-  color: #914F5C !important;
+  color: #8f3157 !important;
 
   font-size: 13px !important;
 }
@@ -341,8 +341,8 @@ body {
   background:
     linear-gradient(
       135deg,
-      #7A3F4A,
-      #C97888
+      #722744,
+      #aa3f6a
     ) !important;
 
   color: #FFFFFF !important;
@@ -362,8 +362,8 @@ body {
   background:
     linear-gradient(
       135deg,
-      #914F5C,
-      #D98F9D
+      #8f3157,
+      #bf6588
     ) !important;
 
   transform: translateY(-2px) !important;
@@ -378,7 +378,7 @@ body {
 
   z-index: 10 !important;
 
-  color: #765C62 !important;
+  color: #704153 !important;
 }
 
 /* =========================
@@ -386,9 +386,9 @@ body {
 ========================= */
 
 ::selection {
-  background: #F3D7DC !important;
+  background: #e9bdcc !important;
 
-  color: #7A3F4A !important;
+  color: #722744 !important;
 }
 
 /* =========================

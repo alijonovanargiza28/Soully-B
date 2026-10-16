@@ -1,11 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap');
 
 :root {
-  --bg-deep: #0a0c09;
+  --bg-deep: #edc2d0;
   --wash-rose: #3a1f22;
   --wash-moss: #16211a;
-  --gold: #c58d32;
-  --cream: #f4ead9;
+  --gold: #8f3157;
+  --cream: #482333;
   --rose: #c97b86;
 }
 
@@ -27,10 +27,10 @@
   inset: 0;
   background: radial-gradient(
     circle at top left,
-    #FFEFF4,
-    #F8DDE5 40%,
-    #EEF8F0 75%,
-    #DDEEDF 100%
+    #fae4ec,
+    #ebbdce 40%,
+    #e7b2c5 75%,
+    #dba1b7 100%
   );
 }
 
@@ -52,7 +52,7 @@
   font-size: 4cap;
   font-weight: 500;
   letter-spacing: 0.42em;
-  color: #B85F6E;
+  color: #8f3157;
   opacity: 0.8;
 }
 
@@ -67,7 +67,7 @@
   font-size: 30px;
   font-weight: 500;
   letter-spacing: 0.08em;
-  color: #cfa96a;
+  color: #8f3157;
   text-decoration: none;
   opacity: 0.92;
   transition: opacity 0.2s ease, letter-spacing 0.2s ease;
